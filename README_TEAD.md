@@ -58,4 +58,4 @@ If you use this code or framework in your research, please cite the correspondin
 
 ## 📬 Contact
 
-For questions, please contact [yourname@yourdomain.com] or open an issue.
+For questions, please contact [rajawaseem@gmail.com] or open an issue.
