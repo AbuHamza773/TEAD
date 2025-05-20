@@ -1,0 +1,32 @@
+# === PART 1: Dataset Loading and Trust Computation (CLR, CWR, CFD) ===
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+
+# Sample: Load NSL-KDD dataset (adjust path or use real download)
+url = "https://raw.githubusercontent.com/defcom17/NSL_KDD/master/KDDTrain+.txt"
+columns_url = "https://raw.githubusercontent.com/defcom17/NSL_KDD/master/KDDFeatureNames.txt"
+
+# Load column names
+col_names = pd.read_csv(columns_url, header=None)
+col_names = col_names[0].str.split(':', expand=True)[0].tolist() + ['class']
+df = pd.read_csv(url, names=col_names)
+
+# Convert class to binary (normal = 0, attack = 1)
+df['class'] = df['class'].apply(lambda x: 0 if x == 'normal' else 1)
+
+# Select key communication-based features for trust computation (customizable)
+df['CLR'] = df['dst_bytes'] / (df['src_bytes'] + 1)  # Communication Link Reliability
+df['CWR'] = df['wrong_fragment'] / (df['count'] + 1)  # Communication Weight Ratio
+df['CFD'] = df['srv_count'].diff().fillna(0).abs()  # Communication Frequency Deviation
+
+# Normalize trust metrics
+scaler = MinMaxScaler()
+trust_features = ['CLR', 'CWR', 'CFD']
+df[trust_features] = scaler.fit_transform(df[trust_features])
+
+# Final trust score (weighted average)
+df['TrustScore'] = (0.4 * df['CLR']) + (0.3 * df['CWR']) + (0.3 * df['CFD'])
+
+# Preview
+df[['CLR', 'CWR', 'CFD', 'TrustScore', 'class']].head(10)
